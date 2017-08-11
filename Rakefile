@@ -1,3 +1,5 @@
+require 'rake/clean'
+
 # Rake.application.options.trace_rules = true
 
 repos = Rake::FileList.new(%w[
@@ -37,7 +39,7 @@ repos = Rake::FileList.new(%w[
   gooseberry
 ])
 
-task default: 'gource-log.txt'
+task default: 'actionsprout-history.ppm'
 
 directory 'repos'
 
@@ -45,17 +47,33 @@ rule '.git' => ['repos'] do |t|
   sh 'git', 'clone', "https://github.com/ActionSprout/#{t.name.pathmap('%f')}", t.name
 end
 
-rule '.log' => ['.git'] do |t|
+rule '.rawlog' => ['.git'] do |t|
   sh 'gource', t.source, '--output-custom-log', t.name
 end
 
+rule '.log' => ['.rawlog'] do |t|
+  sh "sed -E 's#(.+)\\|#\\1|/#{t.name.pathmap('%n')}#' #{t.source} > #{t.name}"
+end
+
 logs = repos.pathmap('repos/%p.log')
+CLEAN.include logs
+CLEAN.include repos.pathmap('repos/%p.rawlog')
+CLEAN << 'gource-log.txt'
 file 'gource-log.txt' => logs do
   sh "cat #{logs} | sort -n > gource-log.txt"
 end
 
-rule '.ppm' => ['.txt'] do
-  sh 'gource'
+CLEAN << 'actionsprout-history.txt'
+file 'actionsprout-history.txt' => ['gource-log.txt'] do
+  sh 'cat gource-log.txt > actionsprout-history.txt'
+end
+
+task show: ['actionsprout-history.txt'] do
+  sh 'gource', 'actionsprout-history.txt', '--load-config', 'gource.config'
+end
+
+rule '.ppm' => ['.txt'] do |t|
+  sh 'gource', t.source, '--load-config', 'gource.config' #, '--output-ppm-stream', t.name
 end
 
 # gource \
