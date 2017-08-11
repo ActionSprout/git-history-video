@@ -10,7 +10,6 @@ repos = Rake::FileList.new(%w[
   as-developers
   as-developers.wiki
   as_jwt_auth
-  coding-styles
   crabgrass
   Snapdragon
   action_sprout-facebook
@@ -39,6 +38,16 @@ repos = Rake::FileList.new(%w[
   gooseberry
 ])
 
+transformations = {
+  "Andrea" => "Andrea Frost",
+  "kculafic" => "Krsto Culafic",
+  "Kyle W. Rader" => "Kyle Rader",
+  "shrapnle" => "Shawn Kemp",
+  "nathancarnes" => "Nathan Carnes",
+  "amiel\\/timwhite47" => "Amiel Martin and Tim White",
+  "evanfrazier" => "Evan Frazier",
+}
+
 task default: 'actionsprout-history.ppm'
 
 directory 'repos'
@@ -47,17 +56,17 @@ rule '.git' => ['repos'] do |t|
   sh 'git', 'clone', "https://github.com/ActionSprout/#{t.name.pathmap('%f')}", t.name
 end
 
+CLEAN.include repos.pathmap('repos/%p.rawlog')
 rule '.rawlog' => ['.git'] do |t|
   sh 'gource', t.source, '--output-custom-log', t.name
 end
 
-rule '.log' => ['.rawlog'] do |t|
-  sh "sed -E 's#(.+)\\|#\\1|/#{t.name.pathmap('%n')}#' #{t.source} > #{t.name}"
-end
-
 logs = repos.pathmap('repos/%p.log')
 CLEAN.include logs
-CLEAN.include repos.pathmap('repos/%p.rawlog')
+rule '.log' => ['.rawlog'] do |t|
+  sh "cat #{t.source} | sed -E 's#(.+)\\|#\\1|/#{t.name.pathmap('%n')}#' > #{t.name}"
+end
+
 CLEAN << 'gource-log.txt'
 file 'gource-log.txt' => logs do
   sh "cat #{logs} | sort -n > gource-log.txt"
@@ -65,7 +74,16 @@ end
 
 CLEAN << 'actionsprout-history.txt'
 file 'actionsprout-history.txt' => ['gource-log.txt'] do
-  sh 'cat gource-log.txt > actionsprout-history.txt'
+  replace_with_sed = "sed -E 's/\\|%s\\|/|%s|/'"
+
+  commands = transformations.map do |before, after|
+    replace_with_sed % [before, after]
+  end
+
+  commands << "sed -E 's/[\\&\\+]/and/'"
+  commands << "sed -E '/^1354923136\\|Tim White\\|[AD]\\|\\/fern\\/ $/d'"
+
+  sh "cat gource-log.txt | #{commands.join(' | ')} > actionsprout-history.txt"
 end
 
 task show: ['actionsprout-history.txt', 'gource.config'] do
