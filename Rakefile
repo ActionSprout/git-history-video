@@ -68,25 +68,11 @@ file 'actionsprout-history.txt' => ['gource-log.txt'] do
   sh 'cat gource-log.txt > actionsprout-history.txt'
 end
 
-task show: ['actionsprout-history.txt'] do
+task show: ['actionsprout-history.txt', 'gource.config'] do
   sh 'gource', 'actionsprout-history.txt', '--load-config', 'gource.config'
 end
 
-rule '.ppm' => ['.txt'] do |t|
+rule '.ppm' => ['.txt', 'gource.config'] do |t|
   sh 'gource', t.source, '--load-config', 'gource.config' #, '--output-ppm-stream', t.name
 end
-
-# gource \
-#   -1280x720 \
-#   --seconds-per-day 0.01 \
-#   --font-size 20 \
-#   --hide filenames,dirnames \
-#   --date-format '%B %Y' \
-#   --title "ActionSprout code changes" \
-#   --max-file-lag 0.1 \
-#   --user-image-dir .git/avatar/ \
-#   --user-scale 4 \
-#   --highlight-users \
-#   --camera-mode overview \
-#   --file-filter '/(images\/img\/(datatables|oxygen))|vendor/' \
 
