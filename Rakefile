@@ -8,7 +8,6 @@ repos = Rake::FileList.new(%w[
   juniper
   waterleaf
   as-developers
-  as-developers.wiki
   as_jwt_auth
   crabgrass
   Snapdragon
@@ -105,13 +104,7 @@ end
 
 CLEAN << 'actionsprout-history.ppm'
 rule '.ppm' => ['.txt', 'gource.config', 'captions.txt'] do |t|
-  puts
-  puts
-  puts "*"*100
-  puts "Generating video. Do not minimize the video window, it needs to render on the screen to correctly generate the video"
-  puts "*"*100
-  puts
-  puts
+  big_message "Generating video. Do not minimize the video window, it needs to render on the screen to correctly generate the video"
   sh 'gource', t.source, '--load-config', 'gource.config', '--output-ppm-stream', t.name
 end
 
@@ -119,5 +112,16 @@ end
 CLOBBER << 'actionsprout-history.mp4'
 rule '.mp4' => ['.ppm'] do |t|
   sh "ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i #{t.source} -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 #{t.name}"
+end
+
+
+def big_message(message)
+  puts
+  puts
+  puts "*" * message.length
+  puts message
+  puts "*" * message.length
+  puts
+  puts
 end
 
