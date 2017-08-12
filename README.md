@@ -47,3 +47,7 @@ To remove all generated files (including git repos and mp4 file)
 ```
 rake clobber
 ```
+
+# TODO
+
+Currently the avatars used in the video are stored in this git repo. It would be nice to script `get-avatars.pl` (and document installing its dependencies) so that all of the required avatars are downloaded on demand.
