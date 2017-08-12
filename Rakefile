@@ -42,12 +42,13 @@ transformations = {
 task default: 'actionsprout-history.mp4'
 
 git_repos = repos.pathmap('repos/%p.git')
-task update: git_repos do
+multitask update: git_repos do
   git_repos.each do |repo|
     sh "(cd #{repo}; git reset --hard; git pull --ff-only)"
   end
 end
 
+CLOBBER << 'repos'
 directory 'repos'
 
 rule '.git' => ['repos'] do |t|
@@ -105,7 +106,6 @@ CLOBBER << 'actionsprout-history.mp4'
 rule '.mp4' => ['.ppm'] do |t|
   sh "ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i #{t.source} -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 #{t.name}"
 end
-
 
 def big_message(message)
   puts

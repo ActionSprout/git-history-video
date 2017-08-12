@@ -1,6 +1,9 @@
 1328652000|Pledgie codebase generated
 1406916000|Enter: Nathan, Nicole, and Amiel
 1463421600|Exit: Nicole
+1464804000|Enter: Andrea
+1468605600|Enter: Kyle
 1486580400|Exit: Tim "Time for a change"
+1496340000|Enter: Michael (full time)
 
 
