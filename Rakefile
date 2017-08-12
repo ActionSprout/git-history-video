@@ -39,7 +39,8 @@ transformations = {
   "evanfrazier" => "Evan Frazier",
 }
 
-task default: 'actionsprout-history.mp4'
+task default: :show
+task generate: 'actionsprout-history.mp4'
 
 git_repos = repos.pathmap('repos/%p.git')
 multitask update: git_repos do
