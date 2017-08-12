@@ -7,30 +7,22 @@ repos = Rake::FileList.new(%w[
   pine
   juniper
   waterleaf
-  as-developers
   as_jwt_auth
   crabgrass
   Snapdragon
-  action_sprout-facebook
-  hardhack
   ivy
   huckleberry
   starflower
   pixie_eyes
   lily
-  eve
-  sunflower
   orchid
   gideon
   salmonberry
-  facebook
-  willow-node
   PineDrops
   cottonwood
   dandelion
   bullseye
   willow
-  clover
   willow2
   fishnet
   salal
