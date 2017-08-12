@@ -48,7 +48,14 @@ transformations = {
   "evanfrazier" => "Evan Frazier",
 }
 
-task default: 'actionsprout-history.ppm'
+task default: 'actionsprout-history.mp4'
+
+git_repos = repos.pathmap('repos/%p.git')
+task update: git_repos do
+  git_repos.each do |repo|
+    sh "(cd #{repo}; git reset --hard; git pull --ff-only)"
+  end
+end
 
 directory 'repos'
 
@@ -69,7 +76,10 @@ end
 
 CLEAN << 'gource-log.txt'
 file 'gource-log.txt' => logs do
-  sh "cat #{logs} | sort -n > gource-log.txt"
+  # This extra line helps group the different repos with the hide-root=false
+  # option set
+  sh "echo '1328651952|Adrian Pike|A|/pledgie' > gource-log.txt"
+  sh "cat #{logs} | sort -n >> gource-log.txt"
 end
 
 CLEAN << 'actionsprout-history.txt'
@@ -81,16 +91,33 @@ file 'actionsprout-history.txt' => ['gource-log.txt'] do
   end
 
   commands << "sed -E 's/[\\&\\+]/and/'"
+  # There are a couple of lines where tim added or deleted a file that's just
+  # fern/_ (space, not underscore). I think these are causing confusion with
+  # the grouping.
   commands << "sed -E '/^1354923136\\|Tim White\\|[AD]\\|\\/fern\\/ $/d'"
 
   sh "cat gource-log.txt | #{commands.join(' | ')} > actionsprout-history.txt"
 end
 
-task show: ['actionsprout-history.txt', 'gource.config'] do
+task show: ['actionsprout-history.txt', 'gource.config', 'captions.txt'] do
   sh 'gource', 'actionsprout-history.txt', '--load-config', 'gource.config'
 end
 
-rule '.ppm' => ['.txt', 'gource.config'] do |t|
-  sh 'gource', t.source, '--load-config', 'gource.config' #, '--output-ppm-stream', t.name
+CLEAN << 'actionsprout-history.ppm'
+rule '.ppm' => ['.txt', 'gource.config', 'captions.txt'] do |t|
+  puts
+  puts
+  puts "*"*100
+  puts "Generating video. Do not minimize the video window, it needs to render on the screen to correctly generate the video"
+  puts "*"*100
+  puts
+  puts
+  sh 'gource', t.source, '--load-config', 'gource.config', '--output-ppm-stream', t.name
+end
+
+
+CLOBBER << 'actionsprout-history.mp4'
+rule '.mp4' => ['.ppm'] do |t|
+  sh "ffmpeg -y -r 60 -f image2pipe -vcodec ppm -i #{t.source} -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -crf 1 -threads 0 -bf 0 #{t.name}"
 end
 
