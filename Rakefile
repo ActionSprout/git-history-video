@@ -1,5 +1,5 @@
 require 'rake/clean'
-require 'digest/sha1'
+require 'digest/md5'
 
 # Rake.application.options.trace_rules = true
 
@@ -66,7 +66,7 @@ logs = repos.pathmap('repos/%p.log')
 CLEAN.include logs
 rule '.log' => ['.rawlog'] do |t|
   project_name = t.name.pathmap('%n')
-  color = Digest::SHA1.hexdigest(project_name)[0..6]
+  color = Digest::MD5.hexdigest(project_name)[0..6]
   sh "cat #{t.source} | sed -E 's#(.+)\\|#\\1|/#{project_name}#' | sed -E 's/$/|#{color.upcase}/' > #{t.name}"
 end
 
